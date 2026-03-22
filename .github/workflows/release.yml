@@ -37,10 +37,30 @@ jobs:
           VERSION: ${{ needs.release-please.outputs.version }}
         run: make dmg VERSION="$VERSION"
 
-      - name: Upload DMG to release
+      - name: Upload DMG and update release notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
           VERSION: ${{ needs.release-please.outputs.version }}
         run: |
           gh release upload "$TAG_NAME" "Share Multi Window-${VERSION}.dmg"
+
+          INSTALL_NOTE=$(cat <<'EOF'
+
+          ---
+
+          ## Installation
+
+          1. Download the `.dmg` file below
+          2. Open it and drag **Share Multi Window** to `/Applications`
+          3. Run the following command in Terminal before opening the app for the first time:
+
+          ```bash
+          xattr -cr /Applications/Share\ Multi\ Window.app
+          ```
+
+          > This is required because the app is not signed with an Apple Developer ID certificate. The command removes the macOS quarantine flag so the app can open normally.
+          EOF
+          )
+
+          gh release edit "$TAG_NAME" --notes "$(gh release view "$TAG_NAME" --json body -q .body)$INSTALL_NOTE"
