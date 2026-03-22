@@ -169,15 +169,41 @@ struct ContentView: View {
             Button {
                 openWindow(id: "composite")
             } label: {
-                Label("Compartilhar", systemImage: "rectangle.inset.filled.and.person.filled")
-                    .font(.body.weight(.medium))
+                Label("Compartilhar", systemImage: "rectangle.on.rectangle")
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            .buttonStyle(GradientButtonStyle())
             .disabled(manager.selectedWindowIDs.isEmpty)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .background(Color(nsColor: .windowBackgroundColor).opacity(0.5))
+    }
+}
+
+struct GradientButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .fontWeight(.semibold)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 8)
+            .background(
+                LinearGradient(
+                    colors: [.blue, .indigo],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .opacity(isEnabled ? 1 : 0.4)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .shadow(
+                color: isEnabled ? Color.accentColor.opacity(0.3) : .clear,
+                radius: 8
+            )
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 
