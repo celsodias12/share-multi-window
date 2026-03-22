@@ -1,6 +1,6 @@
 .build/
 .swiftpm/
-ShareMultiWindow.app/
+*.app/
 *.dmg
 .DS_Store
 .superpowers/
