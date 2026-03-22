@@ -3,6 +3,8 @@ import SwiftUI
 struct CompositeView: View {
     @Environment(WindowCaptureManager.self) private var manager
 
+    private static let bgColor = Color(red: 0.11, green: 0.11, blue: 0.118)
+
     private var windowIDs: [CGWindowID] {
         Array(manager.selectedWindowIDs).sorted()
     }
@@ -24,7 +26,7 @@ struct CompositeView: View {
                 captureGrid
             }
         }
-        .background(.black)
+        .background(Self.bgColor)
     }
 
     // MARK: - Empty state
@@ -48,46 +50,91 @@ struct CompositeView: View {
     private var captureGrid: some View {
         GeometryReader { geo in
             let rows = Int(ceil(Double(windowIDs.count) / Double(columns)))
-            let cellW = geo.size.width / CGFloat(columns)
-            let cellH = geo.size.height / CGFloat(rows)
+            let totalHGaps = CGFloat(columns - 1) * 12
+            let totalVGaps = CGFloat(rows - 1) * 12
+            let cellW = (geo.size.width - 32 - totalHGaps) / CGFloat(columns)
+            let cellH = (geo.size.height - 32 - totalVGaps) / CGFloat(rows)
 
-            VStack(spacing: 1) {
+            VStack(spacing: 12) {
                 ForEach(0..<rows, id: \.self) { row in
-                    HStack(spacing: 1) {
+                    HStack(spacing: 12) {
                         ForEach(0..<columns, id: \.self) { col in
                             let index = row * columns + col
                             if index < windowIDs.count {
-                                WindowFrameView(image: manager.frames[windowIDs[index]])
-                                    .frame(width: cellW - 1, height: cellH - 1)
+                                let windowID = windowIDs[index]
+                                let windowInfo = manager.allWindows.first { $0.id == windowID }
+                                WindowFrameView(
+                                    image: manager.frames[windowID],
+                                    title: windowInfo?.title ?? "",
+                                    appIcon: windowInfo?.appIcon
+                                )
+                                .frame(width: cellW, height: cellH)
                             } else {
-                                Color.black
-                                    .frame(width: cellW - 1, height: cellH - 1)
+                                Self.bgColor
+                                    .frame(width: cellW, height: cellH)
                             }
                         }
                     }
                 }
             }
+            .padding(16)
         }
     }
 }
 
-// MARK: - Single window frame
+// MARK: - Single window frame with slim header
 
 struct WindowFrameView: View {
     let image: NSImage?
+    let title: String
+    let appIcon: NSImage?
 
     var body: some View {
-        if let image {
-            Image(nsImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-        } else {
-            Color.black.opacity(0.5)
-                .overlay {
-                    ProgressView()
-                        .scaleEffect(0.7)
+        VStack(spacing: 0) {
+            // Slim header
+            HStack(spacing: 6) {
+                if let appIcon {
+                    Image(nsImage: appIcon)
+                        .resizable()
+                        .frame(width: 10, height: 10)
+                        .clipShape(RoundedRectangle(cornerRadius: 3))
                 }
+                Text(title)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color.white.opacity(0.6))
+                    .lineLimit(1)
+                Spacer()
+            }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 10)
+            .background(Color.white.opacity(0.06))
+
+            // Separador
+            Rectangle()
+                .fill(Color.white.opacity(0.04))
+                .frame(height: 1)
+
+            // Conteúdo da janela
+            if let image {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                Color.black.opacity(0.3)
+                    .overlay {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                            .tint(.white)
+                    }
+            }
         }
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.3), radius: 16, y: 4)
     }
 }
