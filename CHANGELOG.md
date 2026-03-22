@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/celsodias12/share-multi-window/compare/v1.1.0...v1.2.0) (2026-03-22)
+
+
+### Features
+
+* enable manual triggering of release workflow ([b30b72a](https://github.com/celsodias12/share-multi-window/commit/b30b72af458e945c2e2b4ccce7d665eb15c5da26))
+
 ## [1.1.0](https://github.com/celsodias12/share-multi-window/compare/v1.0.0...v1.1.0) (2026-03-22)
 
 
