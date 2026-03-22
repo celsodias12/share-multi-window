@@ -115,19 +115,25 @@ struct ContentView: View {
 
     private var windowGrid: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 16) {
+            LazyVStack(alignment: .leading, spacing: 18) {
                 ForEach(manager.appGroups) { group in
                     // App section header
-                    HStack(spacing: 8) {
+                    HStack(spacing: 6) {
                         if let icon = group.icon {
                             Image(nsImage: icon)
                                 .resizable()
-                                .frame(width: 18, height: 18)
+                                .frame(width: 14, height: 14)
                         }
                         Text(group.name)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
                             .foregroundStyle(.secondary)
+
+                        Rectangle()
+                            .fill(Color.white.opacity(0.04))
+                            .frame(maxWidth: .infinity, maxHeight: 1)
                     }
                     .padding(.horizontal, 4)
 
