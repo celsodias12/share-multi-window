@@ -10,7 +10,7 @@ struct ShareMultiWindowApp: App {
             ContentView()
                 .environment(manager)
         }
-        .defaultSize(width: 560, height: 520)
+        .defaultSize(width: 640, height: 700)
 
         Window("Tela Compartilhada", id: "composite") {
             CompositeView()

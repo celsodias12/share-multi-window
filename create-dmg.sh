@@ -8,13 +8,21 @@ VOLUME_NAME="${3:-Share Multi Window}"
 TEMP_DMG=$(mktemp -u).dmg
 
 cleanup() {
-    # Desmontar se ainda montado
     if [ -d "/Volumes/$VOLUME_NAME" ]; then
-        hdiutil detach "/Volumes/$VOLUME_NAME" -quiet 2>/dev/null || true
+        hdiutil detach "/Volumes/$VOLUME_NAME" -force -quiet 2>/dev/null || true
     fi
     rm -f "$TEMP_DMG"
 }
 trap cleanup EXIT
+
+# Desmontar volume anterior se existir (causa "Read-only file system")
+if [ -d "/Volumes/$VOLUME_NAME" ]; then
+    echo "  Desmontando volume anterior..."
+    hdiutil detach "/Volumes/$VOLUME_NAME" -force -quiet 2>/dev/null || true
+fi
+
+# Remover DMG anterior
+rm -f "$DMG_OUTPUT"
 
 # Calcular tamanho necessario (app + 10MB margem)
 APP_SIZE_KB=$(du -sk "$APP_BUNDLE" | cut -f1)
@@ -75,4 +83,5 @@ hdiutil convert "$TEMP_DMG" \
 DMG_SIZE=$(du -sh "$DMG_OUTPUT" | cut -f1)
 echo "  Instalador criado: $DMG_OUTPUT ($DMG_SIZE)"
 echo ""
-echo "  Para instalar: abra o .dmg e arraste o app para Applications"
+echo "  Para instalar: arraste o app para Applications"
+open "$DMG_OUTPUT"

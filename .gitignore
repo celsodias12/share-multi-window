@@ -3,3 +3,5 @@
 ShareMultiWindow.app/
 *.dmg
 .DS_Store
+.superpowers/
+TODO.md

@@ -2,31 +2,92 @@ import SwiftUI
 
 struct CompositeView: View {
     @Environment(WindowCaptureManager.self) private var manager
-
-    private static let bgColor = Color(red: 0.11, green: 0.11, blue: 0.118)
-
-    private var windowIDs: [CGWindowID] {
-        Array(manager.selectedWindowIDs).sorted()
-    }
-
-    private var columns: Int {
-        switch windowIDs.count {
-        case 0, 1: return 1
-        case 2:    return 2
-        case 3, 4: return 2
-        default:   return 3
-        }
-    }
+    @Environment(\.dismiss) private var dismiss
+    @State private var showControls = false
 
     var body: some View {
-        Group {
-            if windowIDs.isEmpty {
-                emptyState
-            } else {
-                captureGrid
+        ZStack(alignment: .bottom) {
+            Group {
+                if manager.selectedWindowIDs.isEmpty {
+                    emptyState
+                } else if let activeID = manager.activeWindowID,
+                          let image = manager.frames[activeID] {
+                    Image(nsImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    Color.black
+                        .overlay {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+            }
+
+            // Controles — aparecem no hover
+            if !manager.selectedWindowIDs.isEmpty {
+                HStack(spacing: 10) {
+                    Button {
+                        openControlWindow()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "rectangle.on.rectangle")
+                                .font(.system(size: 10))
+                            Text("Selecionar janelas")
+                                .font(.callout)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.white.opacity(showControls ? 0.2 : 0))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        manager.stopSharing()
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "stop.fill")
+                                .font(.system(size: 10))
+                            Text("Parar")
+                                .font(.callout)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(.red.opacity(showControls ? 0.85 : 0))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.bottom, 16)
+                .opacity(showControls ? 1 : 0)
+                .animation(.easeInOut(duration: 0.2), value: showControls)
             }
         }
-        .background(Self.bgColor)
+        .background(.black)
+        .onHover { hovering in
+            showControls = hovering
+        }
+        .task {
+            manager.startFocusTracking()
+        }
+    }
+
+    private func openControlWindow() {
+        for window in NSApp.windows {
+            if window.title == "Share Multi Window" {
+                window.makeKeyAndOrderFront(nil)
+                NSApp.activate(ignoringOtherApps: true)
+                return
+            }
+        }
     }
 
     // MARK: - Empty state
@@ -43,98 +104,5 @@ struct CompositeView: View {
                 .foregroundStyle(.gray.opacity(0.7))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // MARK: - Grid of captured windows
-
-    private var captureGrid: some View {
-        GeometryReader { geo in
-            let rows = Int(ceil(Double(windowIDs.count) / Double(columns)))
-            let totalHGaps = CGFloat(columns - 1) * 12
-            let totalVGaps = CGFloat(rows - 1) * 12
-            let cellW = (geo.size.width - 32 - totalHGaps) / CGFloat(columns)
-            let cellH = (geo.size.height - 32 - totalVGaps) / CGFloat(rows)
-
-            VStack(spacing: 12) {
-                ForEach(0..<rows, id: \.self) { row in
-                    HStack(spacing: 12) {
-                        ForEach(0..<columns, id: \.self) { col in
-                            let index = row * columns + col
-                            if index < windowIDs.count {
-                                let windowID = windowIDs[index]
-                                let windowInfo = manager.allWindows.first { $0.id == windowID }
-                                WindowFrameView(
-                                    image: manager.frames[windowID],
-                                    title: windowInfo?.title ?? "",
-                                    appIcon: windowInfo?.appIcon
-                                )
-                                .frame(width: cellW, height: cellH)
-                            } else {
-                                Self.bgColor
-                                    .frame(width: cellW, height: cellH)
-                            }
-                        }
-                    }
-                }
-            }
-            .padding(16)
-        }
-    }
-}
-
-// MARK: - Single window frame with slim header
-
-struct WindowFrameView: View {
-    let image: NSImage?
-    let title: String
-    let appIcon: NSImage?
-
-    var body: some View {
-        VStack(spacing: 0) {
-            // Slim header
-            HStack(spacing: 6) {
-                if let appIcon {
-                    Image(nsImage: appIcon)
-                        .resizable()
-                        .frame(width: 10, height: 10)
-                        .clipShape(RoundedRectangle(cornerRadius: 3))
-                }
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(Color.white.opacity(0.6))
-                    .lineLimit(1)
-                Spacer()
-            }
-            .padding(.vertical, 4)
-            .padding(.horizontal, 10)
-            .background(Color.white.opacity(0.06))
-
-            // Separador
-            Rectangle()
-                .fill(Color.white.opacity(0.04))
-                .frame(height: 1)
-
-            // Conteúdo da janela
-            if let image {
-                Image(nsImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                Color.black.opacity(0.3)
-                    .overlay {
-                        ProgressView()
-                            .scaleEffect(0.7)
-                            .tint(.white)
-                    }
-            }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.3), radius: 16, y: 4)
     }
 }
