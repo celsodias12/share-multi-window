@@ -84,4 +84,4 @@ DMG_SIZE=$(du -sh "$DMG_OUTPUT" | cut -f1)
 echo "  Instalador criado: $DMG_OUTPUT ($DMG_SIZE)"
 echo ""
 echo "  Para instalar: arraste o app para Applications"
-open "$DMG_OUTPUT"
+# open "$DMG_OUTPUT"
