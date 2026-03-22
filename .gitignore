@@ -1,0 +1,5 @@
+.build/
+.swiftpm/
+ShareMultiWindow.app/
+*.dmg
+.DS_Store

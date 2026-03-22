@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:share-multi-window}",
+      "name": "Debug ShareMultiWindow",
+      "target": "ShareMultiWindow",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug ShareMultiWindow"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:share-multi-window}",
+      "name": "Release ShareMultiWindow",
+      "target": "ShareMultiWindow",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release ShareMultiWindow"
+    }
+  ]
+}
