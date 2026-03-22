@@ -1,4 +1,4 @@
-APP_NAME     := ShareMultiWindow
+APP_NAME     := Share Multi Window
 DISPLAY_NAME := Share Multi Window
 BUNDLE_ID    := com.sharemultiwindow.app
 VERSION      := 1.0
@@ -17,8 +17,10 @@ app: build
 	@rm -rf "$(APP_BUNDLE)"
 	@mkdir -p "$(APP_BUNDLE)/Contents/MacOS"
 	@mkdir -p "$(APP_BUNDLE)/Contents/Resources"
-	@cp ".build/release/$(APP_NAME)" "$(APP_BUNDLE)/Contents/MacOS/"
+	@cp ".build/release/ShareMultiWindow" "$(APP_BUNDLE)/Contents/MacOS/ShareMultiWindow"
 	@cp Info.plist "$(APP_BUNDLE)/Contents/"
+	@cp AppIcon.icns "$(APP_BUNDLE)/Contents/Resources/"
+	@codesign --force --sign - "$(APP_BUNDLE)"
 	@echo "$(APP_BUNDLE) criado."
 
 dmg: app
