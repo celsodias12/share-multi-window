@@ -189,6 +189,8 @@ struct WindowCard: View {
     let isSelected: Bool
     let onTap: () -> Void
 
+    @State private var isHovered = false
+
     var body: some View {
         VStack(spacing: 0) {
             // Live preview thumbnail
@@ -200,22 +202,26 @@ struct WindowCard: View {
 
                 // Selection overlay
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: 7)
                         .fill(.blue.opacity(0.08))
                     VStack {
                         HStack {
                             Spacer()
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.title3)
-                                .foregroundStyle(.white)
-                                .shadow(color: .black.opacity(0.4), radius: 3)
-                                .padding(6)
+                            ZStack {
+                                Circle()
+                                    .fill(.blue)
+                                    .frame(width: 16, height: 16)
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundStyle(.white)
+                            }
+                            .padding(6)
                         }
                         Spacer()
                     }
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .clipShape(RoundedRectangle(cornerRadius: 7))
 
             // Window title
             HStack(spacing: 6) {
@@ -227,6 +233,7 @@ struct WindowCard: View {
 
                 Text(window.title)
                     .font(.caption)
+                    .fontWeight(isSelected ? .medium : .regular)
                     .lineLimit(1)
                     .foregroundStyle(isSelected ? .primary : .secondary)
 
@@ -234,20 +241,25 @@ struct WindowCard: View {
             }
             .padding(.top, 6)
         }
-        .padding(6)
+        .padding(5)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 10)
                 .fill(isSelected
-                      ? Color.accentColor.opacity(0.08)
+                      ? Color.accentColor.opacity(0.06)
                       : Color(nsColor: .controlBackgroundColor))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 10)
                 .stroke(
-                    isSelected ? Color.accentColor : Color.clear,
-                    lineWidth: 2
+                    isSelected
+                        ? Color.accentColor.opacity(0.4)
+                        : Color.white.opacity(0.06),
+                    lineWidth: isSelected ? 1.5 : 1
                 )
         )
+        .scaleEffect(isHovered ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: isHovered)
+        .onHover { isHovered = $0 }
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
     }
