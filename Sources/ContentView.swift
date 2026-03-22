@@ -32,6 +32,20 @@ struct ContentView: View {
 
     private var toolbar: some View {
         HStack(spacing: 12) {
+            // Ícone do app
+            ZStack {
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(LinearGradient(
+                        colors: [.blue, .indigo],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
+                    .frame(width: 18, height: 18)
+                Image(systemName: "rectangle.on.rectangle")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.white)
+            }
+
             Text("Compartilhar Janela")
                 .font(.title3)
                 .fontWeight(.semibold)
@@ -39,8 +53,9 @@ struct ContentView: View {
             Spacer()
 
             if !manager.selectedWindowIDs.isEmpty {
-                Text("\(manager.selectedWindowIDs.count) selecionada(s)")
+                Text("\(manager.selectedWindowIDs.count)")
                     .font(.subheadline)
+                    .fontWeight(.medium)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .background(.blue.opacity(0.15))
@@ -53,12 +68,16 @@ struct ContentView: View {
             } label: {
                 Image(systemName: "arrow.clockwise")
                     .font(.body)
+                    .frame(width: 24, height: 24)
+                    .background(Color(nsColor: .quaternaryLabelColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.borderless)
             .help("Atualizar lista de janelas")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .background(Color(nsColor: .windowBackgroundColor).opacity(0.5))
     }
 
     // MARK: - Permission error
